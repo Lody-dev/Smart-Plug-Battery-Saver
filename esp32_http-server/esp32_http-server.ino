@@ -7,6 +7,8 @@ const char* password = "PzxdpDbc";
 
 const unsigned long HEARTBEAT_TIMEOUT = 2 * 60 * 1000; // 2 min in ms
 unsigned long lastUpdateTime = 0;
+bool relayIsOn = false;       // track relay/LED state
+bool timeoutTriggered = false; // track if timeout shutoff happened
 
 WebServer server(80);
 
@@ -33,19 +35,28 @@ void handleBatteryPost() {
 
     Serial.print("Battery: ");
     Serial.print(percent);
-    Serial.println("%\n");
+    Serial.println("%");
 
     lastUpdateTime = millis();
 
+    // Reset timeout flag because device is responsive now
+    timeoutTriggered = false;
+
     if (percent >= 80) {
-      turnRelayOff();
+      if (relayIsOn) {
+        turnRelayOff();
+        relayIsOn = false;
+      }
     } else {
-      turnRelayOn();
+      if (!relayIsOn) {
+        turnRelayOn();
+        relayIsOn = true;
+      }
     }
 
-    server.send(200, "text/plain", "OK\n");
+    server.send(200, "text/plain", "OK");
   } else {
-    server.send(400, "text/plain", "Bad Request\n");
+    server.send(400, "text/plain", "Bad Request");
   }
 }
 
@@ -77,9 +88,16 @@ void setup() {
 // === LOOP ===
 void loop() {
   server.handleClient();
+
   unsigned long now = millis();
-  
-  if (now - lastUpdateTime > HEARTBEAT_TIMEOUT) {
-    turnRelayOff(); // fallback shutoff
+
+  if (!timeoutTriggered && now - lastUpdateTime > HEARTBEAT_TIMEOUT) {
+    // Timeout occurred and we haven't switched off yet
+    if (relayIsOn) {
+      turnRelayOff();
+      relayIsOn = false;
+    }
+    timeoutTriggered = true;  // mark that we've done the shutoff
+    Serial.println("Heartbeat timeout - relay turned off");
   }
 }

@@ -2,7 +2,16 @@
 📝 Project Summary
 
 A smart plug that prevents overcharging by cutting off power when a device battery reaches 80%. It uses an ESP32 microcontroller to control a relay and make decisions based on battery level data sent from a Linux device.
+## 📚 Table of Contents
 
+- [⚙️ System Overview](#️-system-overview)
+- [🔌 Hardware Components](#-hardware-components)
+- [💻 Software Components](#-software-components)
+- [🔧 Requirements](#-requirements)
+- [🚀 Quick Setup](#-quick-setup)
+- [📄 License](#-license)
+
+---
 ## ⚙️ System Overview
 
 ✅ Architecture
@@ -58,6 +67,40 @@ Relay control logic:
         Send HTTP POST to ESP32’s /battery endpoint every ~30 seconds
 ```
 
+## 🔧 Requirements
+### Hardware
+   - ESP32 Dev Board
+   - Relay Module
+   - A linux device with a battery (e.g., Steam Deck, Linux laptop)
+
+### Software
+#### On Linux Device:
+
+   - curl (usually pre-installed)
+
+   - upower (for reading battery status)
+
+-> Install upower on Debian-based systems:
+```bash
+sudo apt install upower
+```
+- cron – for periodic execution via crontab
+
+->Install on Debian-based systems:
+```bash
+sudo apt install cron
+sudo systemctl enable --now cron
+```
+
+#### On Development PC:
+
+   - Arduino IDE
+
+   - ESP32 Board Package
+
+-> To install ESP32 board support in Arduino IDE:
+
+    Go to Tools → Board → Board Manager, search for ESP32 by Espressif Systems, and install.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
